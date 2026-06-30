@@ -9,6 +9,7 @@ import { Logo } from './components/Logo'
 
 import Overview from './pages/Overview'
 import Directory from './pages/Directory'
+import Profile from './pages/Profile'
 import TimeOff from './pages/TimeOff'
 import Analytics from './pages/Analytics'
 import Recruiting from './pages/Recruiting'
@@ -28,7 +29,9 @@ const META = {
 export default function App() {
   const [mobileNav, setMobileNav] = useState(false)
   const { pathname } = useLocation()
-  const meta = META[pathname] ?? { title: 'Cablenet HR' }
+  const meta = META[pathname] ?? (pathname.startsWith('/directory/')
+    ? { title: 'Employee Profile', subtitle: 'Everything about this person' }
+    : { title: 'Cablenet HR' })
 
   return (
     <AssistantProvider>
@@ -55,6 +58,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Overview />} />
               <Route path="/directory" element={<Directory />} />
+              <Route path="/directory/:id" element={<Profile />} />
               <Route path="/time-off" element={<TimeOff />} />
               <Route path="/recruiting" element={<Recruiting />} />
               <Route path="/cv-screening" element={<CVScreening />} />
