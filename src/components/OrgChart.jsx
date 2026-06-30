@@ -174,13 +174,11 @@ function Flow({ deptFilter, query }) {
   )
 }
 
-export function OrgChart({ deptFilter = 'all', query = '' }) {
+// Fills whatever container it's placed in (used full-screen by the Directory).
+export function OrgCanvas({ deptFilter = 'all', query = '' }) {
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-[13px] text-ink-500 px-1">Scroll to zoom · drag the canvas to pan · drag a card to reposition · click a person to open their profile</p>
-      <div className="rounded-[var(--radius-card)] bg-white border border-ink-200/70 card-shadow overflow-hidden" style={{ height: 'calc(100vh - 230px)', minHeight: 460 }}>
-        <Flow deptFilter={deptFilter} query={query} />
-      </div>
+    <div className="h-full w-full">
+      <Flow deptFilter={deptFilter} query={query} />
     </div>
   )
 }
