@@ -47,3 +47,5 @@ npm run preview  # preview the production build
 - Hand-built SVG charts (area, bars, donut, funnel, sparkline)
 
 All data is mock/seeded in `src/data/mockData.js`.
+
+_Deployed via GitHub Actions → Vercel on each push to `main`._
