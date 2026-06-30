@@ -49,3 +49,5 @@ npm run preview  # preview the production build
 All data is mock/seeded in `src/data/mockData.js`.
 
 _Deployed via GitHub Actions → Vercel on each push to `main`._
+
+_Live at https://ckontz-gt.github.io/HR-Cablenet-Dashboard/_
