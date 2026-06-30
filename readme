@@ -1,1 +1,49 @@
-making an mvp HR dashboard for cablenet
+# Cablenet HR — MVP Dashboard
+
+An MVP HR admin dashboard for **Cablenet** (Cypriot telecom). Built with
+**React + Vite + Tailwind CSS v4**. Visual identity derives from Cablenet's
+brand — violet (`#5B2D8E`) primary with an orange accent and a "signal / fibre"
+motif throughout.
+
+## Features
+
+- **Overview** — headline KPIs, headcount trend, pending approvals, hiring
+  pipeline, onboarding progress and an activity feed.
+- **People Directory** — searchable/filterable directory (grid + table views)
+  with a detailed profile drawer (contact, role, leave balance, skills).
+- **Time Off & Attendance** — leave approval queue (approve/reject), who's out
+  today, weekly coverage and utilisation stats.
+- **Workforce Analytics** — headcount trajectory, hires vs exits, gender
+  balance, tenure distribution and location split (custom SVG charts).
+- **Recruiting & Onboarding** — open requisitions, candidate pipeline funnel,
+  candidate table and onboarding checklists.
+- **CV Screening** — paste or upload a CV, pick a role, and get a transparent
+  match score with a per-requirement breakdown, matched/missing skills and
+  signals. Runs locally.
+- **HR Assistant (RAG)** — ask natural-language questions about your people,
+  time off, recruiting and analytics. Answers are retrieved from the
+  dashboard's own data and composed with cited sources. Available as a global
+  slide-over and a full page.
+
+> The CV screening and HR assistant are **local, deterministic engines** that
+> retrieve over the bundled mock data — they do not call an external LLM. This
+> keeps the MVP self-contained and offline-capable.
+
+## Getting started
+
+```bash
+npm install
+npm run dev      # start the dev server
+npm run build    # production build
+npm run preview  # preview the production build
+```
+
+## Tech
+
+- React 18 + React Router
+- Tailwind CSS v4 (`@tailwindcss/vite`, CSS-first theme tokens)
+- `@fontsource` (Sora / Inter / JetBrains Mono — bundled, no CDN)
+- `lucide-react` icons
+- Hand-built SVG charts (area, bars, donut, funnel, sparkline)
+
+All data is mock/seeded in `src/data/mockData.js`.
