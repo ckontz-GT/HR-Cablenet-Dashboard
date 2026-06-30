@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { AssistantProvider } from './components/AssistantProvider'
+import { AuthProvider, useAuth } from './components/AuthProvider'
+import { Login } from './components/Login'
 import { Sidebar } from './components/Sidebar'
 import { Topbar } from './components/Topbar'
 import { ChatPanel } from './components/ChatPanel'
@@ -27,6 +29,20 @@ const META = {
 }
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <Gate />
+    </AuthProvider>
+  )
+}
+
+function Gate() {
+  const { authed } = useAuth()
+  if (!authed) return <Login />
+  return <Dashboard />
+}
+
+function Dashboard() {
   const [mobileNav, setMobileNav] = useState(false)
   const { pathname } = useLocation()
   const meta = META[pathname] ?? (pathname.startsWith('/directory/')

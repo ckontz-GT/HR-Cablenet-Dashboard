@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, CalendarDays, BarChart3, Briefcase, ScanLine, Sparkles, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Users, CalendarDays, BarChart3, Briefcase, ScanLine, Sparkles, ChevronRight, LogOut, Info } from 'lucide-react'
 import { Logo } from './Logo'
 import { useAssistant } from './AssistantProvider'
+import { useAuth } from './AuthProvider'
 import { clsx } from '../lib/clsx'
 import { KPIS } from '../data/mockData'
 
@@ -58,6 +59,7 @@ function Item({ item, onNavigate }) {
 
 export function Sidebar({ onNavigate }) {
   const { setOpen } = useAssistant()
+  const { logout } = useAuth()
   return (
     <div className="flex flex-col h-full bg-signal text-white">
       <div className="px-5 h-16 flex items-center shrink-0 border-b border-white/10">
@@ -92,12 +94,23 @@ export function Sidebar({ onNavigate }) {
         </button>
       </div>
 
+      {/* Mock-data notice */}
+      <div className="px-3 pb-2 shrink-0">
+        <div className="flex items-center gap-2 rounded-lg bg-flare-500/15 text-flare-300 px-2.5 py-1.5">
+          <Info size={13} className="shrink-0" />
+          <p className="text-[11px] leading-tight">Demo — all data is mock</p>
+        </div>
+      </div>
+
       <div className="px-4 py-3 shrink-0 border-t border-white/10 flex items-center gap-3">
         <span className="grid place-items-center size-9 rounded-full bg-white/15 text-white font-600 text-[13px]">CK</span>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-500 leading-tight truncate">HR Admin</p>
           <p className="text-[12px] text-white/55 leading-tight truncate">People &amp; Culture</p>
         </div>
+        <button onClick={logout} title="Sign out" aria-label="Sign out" className="grid place-items-center size-9 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition shrink-0">
+          <LogOut size={17} />
+        </button>
       </div>
     </div>
   )
