@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, LayoutGrid, List, Network, X, MapPin, Users2, ChevronRight, Minimize2, Sparkles } from 'lucide-react'
+import { Search, LayoutGrid, List, Network, X, MapPin, Users2, ChevronRight, Minimize2, MessageCircle } from 'lucide-react'
 import { Card, Pill, Avatar, Button, STATUS_TONE } from '../components/ui'
 import { OrgCanvas } from '../components/OrgChart'
 import { Slashes } from '../components/Logo'
@@ -59,7 +59,7 @@ export default function Directory() {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="secondary" size="sm" icon={Sparkles} className="hidden sm:inline-flex" onClick={() => setOpen(true)}>Ask HR</Button>
+            <Button variant="secondary" size="sm" icon={MessageCircle} className="hidden sm:inline-flex" onClick={() => setOpen(true)}>Ask Signal</Button>
             <Button variant="dark" size="sm" icon={Minimize2} onClick={() => setView('grid')}>Exit graph view</Button>
           </div>
         </header>

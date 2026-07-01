@@ -1,6 +1,9 @@
 import { clsx } from '../lib/clsx'
 
 // --- Card ---------------------------------------------------------------------
+// A flat panel: hairline border does the work of separating it from the page,
+// with only a whisper of shadow (not the glossy floating-tile look every
+// widget doesn't need).
 export function Card({ className, children, as: Tag = 'div', ...rest }) {
   return (
     <Tag
@@ -15,16 +18,12 @@ export function Card({ className, children, as: Tag = 'div', ...rest }) {
 export function CardHeader({ title, subtitle, action, icon: Icon, className }) {
   return (
     <div className={clsx('flex items-start justify-between gap-4 px-5 pt-5', className)}>
-      <div className="flex items-start gap-3 min-w-0">
-        {Icon && (
-          <span className="grid place-items-center size-9 rounded-xl bg-brand-50 text-brand-700 shrink-0">
-            <Icon size={18} strokeWidth={2.2} />
-          </span>
-        )}
-        <div className="min-w-0">
-          <h3 className="font-display font-600 text-ink-900 text-[15px] leading-tight text-balance">{title}</h3>
-          {subtitle && <p className="text-[13px] text-ink-500 mt-0.5">{subtitle}</p>}
-        </div>
+      <div className="min-w-0">
+        <h3 className="flex items-center gap-2 font-display font-600 text-ink-900 text-[15px] leading-tight text-balance">
+          {Icon && <Icon size={16} strokeWidth={2.2} className="text-brand-600 shrink-0" />}
+          {title}
+        </h3>
+        {subtitle && <p className="text-[13px] text-ink-500 mt-1">{subtitle}</p>}
       </div>
       {action}
     </div>

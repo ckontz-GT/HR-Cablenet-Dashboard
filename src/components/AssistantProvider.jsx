@@ -8,7 +8,7 @@ let msgId = 0
 const greeting = {
   id: ++msgId,
   role: 'assistant',
-  text: "Hi — I'm the Cablenet HR assistant. Ask me anything about your people, time off, recruiting or workforce data and I'll pull the answer straight from the dashboard.",
+  text: "Hi — I'm Signal, the Cablenet HR assistant. Ask me anything about your people, time off, recruiting or workforce data and I'll pull the answer straight from the dashboard.",
   sources: [],
   cards: [],
   chips: ['How many people work at Cablenet?', "Who's on leave today?", 'How many open roles?', 'Find people who know React'],

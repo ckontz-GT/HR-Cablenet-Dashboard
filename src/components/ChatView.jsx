@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Sparkles, FileText, Briefcase, CalendarClock, User } from 'lucide-react'
+import { Send, MessageCircle, FileText, Briefcase, CalendarClock, User } from 'lucide-react'
 import { useAssistant } from './AssistantProvider'
 import { Avatar, Pill, STAGE_TONE } from './ui'
 import { SignalMark } from './Logo'
@@ -120,7 +120,7 @@ export function ChatView({ compact = false }) {
       </div>
       <form onSubmit={submit} className="shrink-0 border-t border-ink-200 p-3 bg-white">
         <div className="flex items-end gap-2 rounded-xl border border-ink-200 bg-ink-50 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition-all px-2 py-1.5">
-          <Sparkles size={16} className="text-brand-500 mb-2 ml-1 shrink-0" />
+          <MessageCircle size={16} className="text-brand-500 mb-2 ml-1 shrink-0" />
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}

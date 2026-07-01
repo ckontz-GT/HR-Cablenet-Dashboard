@@ -25,7 +25,7 @@ const META = {
   '/recruiting': { title: 'Recruiting & Onboarding', subtitle: 'Open roles, pipeline and new starters' },
   '/cv-screening': { title: 'CV Screening', subtitle: 'Score candidates against a role profile' },
   '/analytics': { title: 'Workforce Analytics', subtitle: 'Headcount, attrition and diversity' },
-  '/assistant': { title: 'HR Assistant', subtitle: 'Ask anything about your people data' },
+  '/assistant': { title: 'Signal', subtitle: 'Ask anything about your people data' },
 }
 
 export default function App() {
