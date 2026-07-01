@@ -5,10 +5,12 @@ import { Card, CardHeader, Pill, Avatar, Button, Progress, STATUS_TONE, STAGE_TO
 import { AreaChart, HBars } from '../components/charts'
 import { useAssistant } from '../components/AssistantProvider'
 import {
-  KPIS, HEADCOUNT_TREND, HEADCOUNT_BY_DEPT, PENDING_LEAVE, OUT_TODAY, ONBOARDING, ACTIVITY, FUNNEL, CANDIDATES,
+  KPIS, HEADCOUNT_TREND, HEADCOUNT_BY_DEPT, LEAVE_REQUESTS, OUT_TODAY, ONBOARDING, ACTIVITY, FUNNEL, CANDIDATES,
 } from '../data/mockData'
 
 const ACTIVITY_ICON = { leave: CalendarClock, hire: UserPlus, cv: ScanLine, onboard: CheckCircle2, review: FileText }
+// Leave-type colours, matching the Time Off page.
+const TYPE_TONE = { Annual: 'brand', Sick: 'crit', Parental: 'info', Unpaid: 'neutral' }
 
 export default function Overview() {
   const { setOpen, send } = useAssistant()
@@ -20,7 +22,7 @@ export default function Overview() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <HeroStat label="Total headcount" value={KPIS.headcount} sub={`▲ ${KPIS.headcountDelta} this quarter · ${KPIS.onboarding} onboarding`} spark={sparkHeadcount} />
         <StatCard label="Open roles" value={KPIS.openRoles} icon={Briefcase} delta={2} deltaLabel="" tone="flare" spark={[3, 4, 4, 6, 7, 9, KPIS.openRoles]} />
-        <StatCard label="Pending leave" value={KPIS.pendingLeave} icon={CalendarClock} tone="warn" spark={[2, 5, 3, 6, 4, 7, KPIS.pendingLeave]} />
+        <StatCard label="Out today" value={OUT_TODAY.length} icon={CalendarClock} tone="brand" />
         <StatCard label="Avg tenure" value={KPIS.avgTenure} suffix="yrs" icon={TrendingUp} delta={0.3} deltaLabel="y" tone="good" spark={[3.1, 3.2, 3.4, 3.3, 3.6, 3.7, KPIS.avgTenure]} />
       </div>
 
@@ -54,19 +56,19 @@ export default function Overview() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Pending approvals */}
+        {/* Time off — read-only record snapshot (HR-only, no approvals) */}
         <Card className="flex flex-col">
-          <CardHeader title="Pending approvals" subtitle={`${PENDING_LEAVE.length} leave requests`} icon={CalendarClock}
+          <CardHeader title="Recent time off" subtitle={`${LEAVE_REQUESTS.length} entries on record`} icon={CalendarClock}
             action={<Link to="/time-off" className="text-[13px] font-500 text-brand-700 hover:underline">View all</Link>} />
           <div className="px-3 py-3 flex flex-col gap-1">
-            {PENDING_LEAVE.slice(0, 4).map((l) => (
+            {[...LEAVE_REQUESTS].sort((a, b) => b.startDate.localeCompare(a.startDate)).slice(0, 4).map((l) => (
               <div key={l.id} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-ink-50 transition">
                 <Avatar name={l.employeeName} initials={l.employeeName.split(' ').map((w) => w[0]).join('')} hue={265} size={36} />
                 <div className="min-w-0 flex-1">
                   <p className="text-[13.5px] font-500 text-ink-900 truncate">{l.employeeName}</p>
-                  <p className="text-[12px] text-ink-500">{l.type} · {l.days}d</p>
+                  <p className="text-[12px] text-ink-500">{l.startDate} → {l.endDate} · {l.days}d</p>
                 </div>
-                <Pill tone="warn" dot>Pending</Pill>
+                <Pill tone={TYPE_TONE[l.type]}>{l.type}</Pill>
               </div>
             ))}
           </div>

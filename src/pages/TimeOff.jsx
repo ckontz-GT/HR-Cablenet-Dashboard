@@ -1,51 +1,74 @@
 import { useState } from 'react'
-import { Check, X, CalendarClock, Plane, Stethoscope, Baby, CircleSlash, CalendarDays, Clock } from 'lucide-react'
-import { Card, CardHeader, Pill, Avatar, Button, STATUS_TONE, Eyebrow } from '../components/ui'
+import { CalendarClock, Plane, Stethoscope, Baby, CircleSlash, CalendarDays, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Card, CardHeader, Pill, Avatar } from '../components/ui'
 import { StatCard } from '../components/StatCard'
 import { clsx } from '../lib/clsx'
-import { LEAVE_REQUESTS, OUT_TODAY, KPIS, EMPLOYEES } from '../data/mockData'
+import { LEAVE_REQUESTS, OUT_TODAY, EMPLOYEES } from '../data/mockData'
 
 const TYPE_ICON = { Annual: Plane, Sick: Stethoscope, Parental: Baby, Unpaid: CircleSlash }
 const TYPE_TONE = { Annual: 'brand', Sick: 'crit', Parental: 'info', Unpaid: 'neutral' }
+const TYPE_HEX = { Annual: '#7c3aed', Sick: '#e5484d', Parental: '#3b82f6', Unpaid: '#94a3b8' }
+const LEAVE_TYPES = ['Annual', 'Sick', 'Parental', 'Unpaid']
 const initials = (n) => n.split(' ').map((w) => w[0]).join('')
 
 export default function TimeOff() {
-  const [requests, setRequests] = useState(LEAVE_REQUESTS)
-  const [tab, setTab] = useState('Pending')
+  // HR-only view: a read-only, organised record of everyone's time off.
+  // No approval workflow — leave is grouped by type so HR can scan it quickly.
+  const [tab, setTab] = useState('All')
+  const [view, setView] = useState('list') // 'list' | 'calendar'
 
-  const act = (id, status) => setRequests((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)))
-  const counts = {
-    Pending: requests.filter((r) => r.status === 'Pending').length,
-    Approved: requests.filter((r) => r.status === 'Approved').length,
-    Rejected: requests.filter((r) => r.status === 'Rejected').length,
-  }
-  const shown = requests.filter((r) => r.status === tab)
+  const counts = LEAVE_TYPES.reduce(
+    (acc, t) => ({ ...acc, [t]: LEAVE_REQUESTS.filter((r) => r.type === t).length }),
+    { All: LEAVE_REQUESTS.length },
+  )
+  const shown = (tab === 'All' ? LEAVE_REQUESTS : LEAVE_REQUESTS.filter((r) => r.type === tab))
+    .slice()
+    .sort((a, b) => a.startDate.localeCompare(b.startDate))
+
   const utilised = Math.round((EMPLOYEES.reduce((s, e) => s + e.leave.taken, 0) / EMPLOYEES.reduce((s, e) => s + e.leave.entitlement, 0)) * 100)
+  const totalDays = shown.reduce((s, r) => s + r.days, 0)
 
   return (
     <div className="flex flex-col gap-6 animate-rise">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Awaiting approval" value={counts.Pending} icon={CalendarClock} tone="warn" />
+        <StatCard label="Leave entries logged" value={LEAVE_REQUESTS.length} icon={CalendarClock} tone="brand" />
         <StatCard label="Out today" value={OUT_TODAY.length} icon={Plane} tone="brand" />
         <StatCard label="Leave utilised" value={utilised} suffix="%" icon={CalendarDays} tone="good" />
         <StatCard label="Avg balance left" value={Math.round(EMPLOYEES.reduce((s, e) => s + e.leave.remaining, 0) / EMPLOYEES.length)} suffix="d" icon={Clock} tone="brand" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Approvals queue */}
+        {/* Leave record, grouped by type */}
         <Card className="xl:col-span-2 flex flex-col">
-          <CardHeader title="Leave requests" subtitle="Review and action time-off requests" icon={CalendarClock} />
+          <CardHeader title="Leave record" subtitle="All time off, organised by type" icon={CalendarClock}
+            action={
+              <div className="inline-flex rounded-lg bg-ink-100 p-0.5 gap-0.5">
+                {['list', 'calendar'].map((v) => (
+                  <button key={v} onClick={() => setView(v)} className={clsx('px-2.5 h-7 rounded-md text-[12px] font-500 capitalize transition', view === v ? 'bg-white text-ink-900 card-shadow' : 'text-ink-500 hover:text-ink-800')}>{v}</button>
+                ))}
+              </div>
+            } />
+          {view === 'list' ? (
+          <>
           <div className="px-5 pt-3">
-            <div className="inline-flex rounded-xl bg-ink-100 p-1 gap-1">
-              {['Pending', 'Approved', 'Rejected'].map((t) => (
-                <button key={t} onClick={() => setTab(t)} className={clsx('px-3.5 h-9 rounded-lg text-[13px] font-500 transition flex items-center gap-2', tab === t ? 'bg-white text-ink-900 card-shadow' : 'text-ink-500 hover:text-ink-800')}>
-                  {t}<span className={clsx('tnum text-[11px] px-1.5 rounded-full', tab === t ? 'bg-brand-50 text-brand-700' : 'bg-ink-200 text-ink-500')}>{counts[t]}</span>
-                </button>
-              ))}
+            <div className="inline-flex flex-wrap rounded-xl bg-ink-100 p-1 gap-1">
+              {['All', ...LEAVE_TYPES].map((t) => {
+                const Icon = TYPE_ICON[t]
+                return (
+                  <button key={t} onClick={() => setTab(t)} className={clsx('px-3.5 h-9 rounded-lg text-[13px] font-500 transition flex items-center gap-2', tab === t ? 'bg-white text-ink-900 card-shadow' : 'text-ink-500 hover:text-ink-800')}>
+                    {Icon && <Icon size={13} className="-ml-0.5" />}{t}
+                    <span className={clsx('tnum text-[11px] px-1.5 rounded-full', tab === t ? 'bg-brand-50 text-brand-700' : 'bg-ink-200 text-ink-500')}>{counts[t]}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
-          <div className="p-3 flex flex-col gap-1.5">
-            {shown.length === 0 && <p className="text-center text-[13px] text-ink-500 py-10">No {tab.toLowerCase()} requests.</p>}
+          <div className="px-5 pt-3 pb-1 flex items-center justify-between text-[12px] text-ink-500">
+            <span>{shown.length} {shown.length === 1 ? 'entry' : 'entries'}{tab !== 'All' && <> · {tab.toLowerCase()} leave</>}</span>
+            <span className="tnum">{totalDays} total days</span>
+          </div>
+          <div className="p-3 pt-1 flex flex-col gap-1.5">
+            {shown.length === 0 && <p className="text-center text-[13px] text-ink-500 py-10">No {tab === 'All' ? '' : tab.toLowerCase() + ' '}leave on record.</p>}
             {shown.map((r) => {
               const Icon = TYPE_ICON[r.type]
               return (
@@ -56,20 +79,20 @@ export default function TimeOff() {
                       <p className="text-[14px] font-600 text-ink-900 truncate">{r.employeeName}</p>
                       <Pill tone={TYPE_TONE[r.type]}><Icon size={11} className="-ml-0.5" />{r.type}</Pill>
                     </div>
-                    <p className="text-[12.5px] text-ink-500 mt-0.5">{r.startDate} → {r.endDate} · <span className="font-500 text-ink-700 tnum">{r.days} days</span></p>
+                    <p className="text-[12.5px] text-ink-500 mt-0.5">{r.department} · {r.startDate} → {r.endDate}</p>
                   </div>
-                  {r.status === 'Pending' ? (
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => act(r.id, 'Approved')} className="grid place-items-center size-9 rounded-lg bg-good-50 text-good-700 hover:bg-good-500 hover:text-white transition" title="Approve"><Check size={17} /></button>
-                      <button onClick={() => act(r.id, 'Rejected')} className="grid place-items-center size-9 rounded-lg bg-crit-50 text-crit-700 hover:bg-crit-500 hover:text-white transition" title="Reject"><X size={17} /></button>
-                    </div>
-                  ) : (
-                    <Pill tone={STATUS_TONE[r.status]} dot>{r.status}</Pill>
-                  )}
+                  <div className="text-right shrink-0">
+                    <p className="text-[14px] font-600 text-ink-900 tnum">{r.days}</p>
+                    <p className="text-[11px] text-ink-400 -mt-0.5">{r.days === 1 ? 'day' : 'days'}</p>
+                  </div>
                 </div>
               )
             })}
           </div>
+          </>
+          ) : (
+            <LeaveCalendar />
+          )}
         </Card>
 
         {/* Who's out + calendar strip */}
@@ -95,6 +118,72 @@ export default function TimeOff() {
             <div className="p-5"><WeekStrip /></div>
           </Card>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// Month calendar showing who's on leave each day, colour-coded by type.
+function LeaveCalendar() {
+  const [ym, setYm] = useState({ y: 2026, m: 6 }) // July 2026 — mock leave spans Jun–Aug
+  const pad = (n) => String(n).padStart(2, '0')
+  const monthLabel = new Date(ym.y, ym.m, 1).toLocaleString('en-GB', { month: 'long', year: 'numeric' })
+  const daysInMonth = new Date(ym.y, ym.m + 1, 0).getDate()
+  const firstWeekday = (new Date(ym.y, ym.m, 1).getDay() + 6) % 7 // Monday = 0
+
+  const entriesOn = (d) => {
+    const ds = `${ym.y}-${pad(ym.m + 1)}-${pad(d)}`
+    return LEAVE_REQUESTS.filter((l) => l.startDate <= ds && ds <= l.endDate)
+  }
+  const shift = (delta) => setYm(({ y, m }) => {
+    const nm = m + delta
+    return { y: y + Math.floor(nm / 12), m: ((nm % 12) + 12) % 12 }
+  })
+
+  const cells = [...Array(firstWeekday).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
+
+  return (
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-3">
+        <button onClick={() => shift(-1)} className="grid place-items-center size-8 rounded-lg text-ink-500 hover:bg-ink-100 transition" aria-label="Previous month"><ChevronLeft size={18} /></button>
+        <p className="font-600 text-ink-900 text-[14px]">{monthLabel}</p>
+        <button onClick={() => shift(1)} className="grid place-items-center size-8 rounded-lg text-ink-500 hover:bg-ink-100 transition" aria-label="Next month"><ChevronRight size={18} /></button>
+      </div>
+
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+          <div key={d} className="text-center text-[11px] font-600 text-ink-400">{d}</div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          if (d === null) return <div key={`b${i}`} />
+          const es = entriesOn(d)
+          const weekend = i % 7 >= 5
+          return (
+            <div key={d} className={clsx('min-h-[62px] rounded-lg border p-1.5 flex flex-col gap-1', weekend ? 'bg-ink-50 border-ink-100' : 'bg-white border-ink-200/70')}>
+              <span className="text-[11px] font-600 text-ink-500 tnum">{d}</span>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                {es.slice(0, 2).map((l) => (
+                  <div key={l.id} className="flex items-center gap-1 min-w-0" title={`${l.employeeName} · ${l.type}`}>
+                    <span className="size-1.5 rounded-full shrink-0" style={{ background: TYPE_HEX[l.type] }} />
+                    <span className="text-[10.5px] text-ink-600 truncate">{l.employeeName.split(' ')[0]}</span>
+                  </div>
+                ))}
+                {es.length > 2 && <span className="text-[10px] text-ink-400 pl-2.5">+{es.length - 2} more</span>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-ink-100">
+        {Object.entries(TYPE_HEX).map(([t, c]) => (
+          <span key={t} className="flex items-center gap-1.5 text-[11.5px] text-ink-500">
+            <span className="size-2 rounded-full" style={{ background: c }} />{t}
+          </span>
+        ))}
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Mail, Phone, MapPin, Calendar, Award, Briefcase, Clock, Users2, IdCard,
-  CalendarClock, Plane, Stethoscope, Baby, CircleSlash, ChevronRight, TrendingUp, Building2,
+  CalendarClock, Plane, Stethoscope, Baby, CircleSlash, ChevronRight, TrendingUp, Building2, GraduationCap,
 } from 'lucide-react'
 import { Card, CardHeader, Pill, Avatar, Button, Progress, Eyebrow, STATUS_TONE } from '../components/ui'
 import { Donut } from '../components/charts'
@@ -122,7 +122,7 @@ export default function Profile() {
             </div>
 
             <div>
-              <Eyebrow className="mb-2">Requests this year</Eyebrow>
+              <Eyebrow className="mb-2">Leave this year</Eyebrow>
               {leaves.length ? (
                 <div className="flex flex-col gap-2">
                   {leaves.map((l) => {
@@ -134,13 +134,13 @@ export default function Profile() {
                           <p className="text-[13px] font-500 text-ink-900">{l.type} · {l.days}d</p>
                           <p className="text-[11.5px] text-ink-500">{l.startDate} → {l.endDate}</p>
                         </div>
-                        <Pill tone={STATUS_TONE[l.status]} dot>{l.status}</Pill>
+                        <Pill tone={LEAVE_TONE[l.type]}>{l.type}</Pill>
                       </div>
                     )
                   })}
                 </div>
               ) : (
-                <p className="text-[13px] text-ink-500">No leave requests on record this year.</p>
+                <p className="text-[13px] text-ink-500">No leave recorded this year.</p>
               )}
             </div>
           </div>
@@ -157,6 +157,21 @@ export default function Profile() {
               <DetailRow label="Employee ID" value={e.id} mono />
               <DetailRow label="Tenure" value={`${e.tenureYears} years`} />
               <DetailRow label="Performance" valueEl={<Pill tone={PERF_TONE[e.performance]}>{e.performance}</Pill>} />
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader title="Education" subtitle={`${(e.education ?? []).length} ${(e.education ?? []).length === 1 ? 'qualification' : 'qualifications'}`} icon={GraduationCap} />
+            <div className="p-5 pt-3 flex flex-col gap-3">
+              {(e.education ?? []).map((ed, i) => (
+                <div key={i} className="flex gap-3">
+                  <span className="grid place-items-center size-9 rounded-xl bg-brand-50 text-brand-700 shrink-0"><GraduationCap size={16} /></span>
+                  <div className="min-w-0">
+                    <p className="text-[13.5px] font-600 text-ink-900">{ed.degree} · {ed.field}</p>
+                    <p className="text-[12px] text-ink-500">{ed.institution} · {ed.year}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
 

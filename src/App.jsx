@@ -21,7 +21,7 @@ import Assistant from './pages/Assistant'
 const META = {
   '/': { title: 'Overview', subtitle: 'Your people at a glance — Tuesday, 30 June 2026' },
   '/directory': { title: 'People Directory', subtitle: 'Everyone at Cablenet' },
-  '/time-off': { title: 'Time Off & Attendance', subtitle: 'Leave requests, balances and who’s out' },
+  '/time-off': { title: 'Time Off & Attendance', subtitle: 'Leave records, balances and who’s out' },
   '/recruiting': { title: 'Recruiting & Onboarding', subtitle: 'Open roles, pipeline and new starters' },
   '/cv-screening': { title: 'CV Screening', subtitle: 'Score candidates against a role profile' },
   '/analytics': { title: 'Workforce Analytics', subtitle: 'Headcount, attrition and diversity' },

@@ -15,7 +15,7 @@ const NAV = [
     group: 'People',
     items: [
       { to: '/directory', label: 'Directory', icon: Users },
-      { to: '/time-off', label: 'Time Off', icon: CalendarDays, badge: KPIS.pendingLeave },
+      { to: '/time-off', label: 'Time Off', icon: CalendarDays },
     ],
   },
   {

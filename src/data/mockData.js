@@ -70,6 +70,49 @@ const SKILLS = {
   people: ['Recruiting', 'ATS', 'Employee relations', 'L&D', 'Payroll', 'Greek labour law', 'Onboarding', 'HRIS'],
 }
 
+// --- Education / degrees ------------------------------------------------------
+const EDU_FIELDS = {
+  network: ['Computer Engineering', 'Electrical Engineering', 'Telecommunications', 'Computer Science'],
+  field: ['Electrical Engineering', 'Telecommunications', 'Electronics Technology', 'Network Engineering'],
+  care: ['Business Administration', 'Communications', 'Economics', 'Psychology'],
+  sales: ['Business Administration', 'Marketing', 'Economics', 'Management'],
+  marketing: ['Marketing', 'Communications', 'Digital Media', 'Business Administration'],
+  product: ['Computer Science', 'Software Engineering', 'Information Systems', 'Interaction Design'],
+  it: ['Computer Science', 'Information Systems', 'Cybersecurity', 'Computer Engineering'],
+  finance: ['Accounting & Finance', 'Economics', 'Business Administration', 'Finance'],
+  people: ['Human Resource Management', 'Psychology', 'Business Administration', 'Organisational Psychology'],
+}
+const UG_DEGREE = { network: 'BEng', field: 'BSc', care: 'BA', sales: 'BSc', marketing: 'BA', product: 'BSc', it: 'BSc', finance: 'BSc', people: 'BSc' }
+const INSTITUTIONS = [
+  'University of Cyprus', 'Cyprus University of Technology', 'University of Nicosia',
+  'European University Cyprus', 'Frederick University', 'University of Manchester',
+  'Imperial College London', 'UCL', 'University of Athens', 'Aristotle University of Thessaloniki',
+]
+
+// Build 1–2 realistic qualifications for an employee, keyed to their department.
+function makeEducation(r, deptId, startYear) {
+  const fields = EDU_FIELDS[deptId] ?? EDU_FIELDS.care
+  const gradYear = Math.max(2004, startYear - between(r, 0, 3))
+  const edu = [{
+    degree: UG_DEGREE[deptId] ?? 'BSc',
+    field: pick(r, fields),
+    institution: pick(r, INSTITUTIONS),
+    year: gradYear,
+  }]
+  // ~40% also hold a postgraduate degree
+  if (r() < 0.4) {
+    const isBiz = deptId === 'sales' || deptId === 'finance' || deptId === 'people'
+    const pgDegree = isBiz && r() < 0.5 ? 'MBA' : 'MSc'
+    edu.push({
+      degree: pgDegree,
+      field: pgDegree === 'MBA' ? 'Business Administration' : pick(r, fields),
+      institution: pick(r, INSTITUTIONS),
+      year: Math.min(2024, gradYear + between(r, 1, 4)),
+    })
+  }
+  return edu
+}
+
 const STATUS_WEIGHTS = ['Active', 'Active', 'Active', 'Active', 'Active', 'Active', 'Active', 'On leave', 'Onboarding']
 
 function makeEmployees() {
@@ -119,6 +162,7 @@ function makeEmployees() {
         performance: perf,
         hue: dept.hue,
         skills,
+        education: makeEducation(r, dept.id, startYear),
         leave: { entitlement: annualEntitlement, taken, remaining: annualEntitlement - taken },
       })
       id++
