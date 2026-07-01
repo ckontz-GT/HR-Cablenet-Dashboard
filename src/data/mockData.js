@@ -448,11 +448,11 @@ export const LOCATION_SPLIT = LOCATIONS.map((loc) => ({
 
 // --- Activity feed ------------------------------------------------------------
 export const ACTIVITY = [
-  { id: 1, kind: 'leave', text: 'approved annual leave for', subject: EMPLOYEES[3].name, actor: 'You', time: '12m ago' },
+  { id: 1, kind: 'leave', text: 'Annual leave recorded for', subject: EMPLOYEES[3].name, actor: '', time: '12m ago' },
   { id: 2, kind: 'hire', text: 'moved to Offer stage for Frontend Engineer', subject: CANDIDATES.find((c) => c.jobId === 'JOB-304')?.name ?? 'Candidate', actor: 'Recruiting', time: '40m ago' },
   { id: 3, kind: 'cv', text: 'screened 12 CVs for Customer Care Agent', subject: '', actor: 'CV Screening', time: '1h ago' },
   { id: 4, kind: 'onboard', text: 'completed induction', subject: ONBOARDING[0]?.name ?? 'New hire', actor: 'People Ops', time: '2h ago' },
-  { id: 5, kind: 'leave', text: 'submitted a sick leave request', subject: PENDING_LEAVE[0]?.employeeName ?? 'Employee', actor: '', time: '3h ago' },
+  { id: 5, kind: 'leave', text: 'Sick leave recorded for', subject: PENDING_LEAVE[0]?.employeeName ?? 'Employee', actor: '', time: '3h ago' },
   { id: 6, kind: 'review', text: 'logged a performance review for Network Engineering', subject: '', actor: 'You', time: 'Yesterday' },
 ]
 

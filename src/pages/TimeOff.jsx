@@ -3,6 +3,7 @@ import { CalendarClock, Plane, Stethoscope, Baby, CircleSlash, CalendarDays, Clo
 import { Card, CardHeader, Pill, Avatar } from '../components/ui'
 import { StatCard } from '../components/StatCard'
 import { clsx } from '../lib/clsx'
+import { fmtRange } from '../lib/date'
 import { LEAVE_REQUESTS, OUT_TODAY, EMPLOYEES } from '../data/mockData'
 
 const TYPE_ICON = { Annual: Plane, Sick: Stethoscope, Parental: Baby, Unpaid: CircleSlash }
@@ -79,7 +80,7 @@ export default function TimeOff() {
                       <p className="text-[14px] font-600 text-ink-900 truncate">{r.employeeName}</p>
                       <Pill tone={TYPE_TONE[r.type]}><Icon size={11} className="-ml-0.5" />{r.type}</Pill>
                     </div>
-                    <p className="text-[12.5px] text-ink-500 mt-0.5">{r.department} · {r.startDate} → {r.endDate}</p>
+                    <p className="text-[12.5px] text-ink-500 mt-0.5">{r.department} · {fmtRange(r.startDate, r.endDate)}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-[14px] font-600 text-ink-900 tnum">{r.days}</p>

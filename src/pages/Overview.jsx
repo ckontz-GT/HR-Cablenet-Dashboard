@@ -4,6 +4,7 @@ import { HeroStat, StatCard } from '../components/StatCard'
 import { Card, CardHeader, Pill, Avatar, Button, Progress, STATUS_TONE, STAGE_TONE, Eyebrow } from '../components/ui'
 import { AreaChart, HBars } from '../components/charts'
 import { NeedsAttention } from '../components/NeedsAttention'
+import { fmtRange } from '../lib/date'
 import { useAssistant } from '../components/AssistantProvider'
 import {
   KPIS, HEADCOUNT_TREND, HEADCOUNT_BY_DEPT, LEAVE_REQUESTS, OUT_TODAY, ONBOARDING, ACTIVITY, FUNNEL, CANDIDATES,
@@ -70,7 +71,7 @@ export default function Overview() {
                 <Avatar name={l.employeeName} initials={l.employeeName.split(' ').map((w) => w[0]).join('')} hue={265} size={36} />
                 <div className="min-w-0 flex-1">
                   <p className="text-[13.5px] font-500 text-ink-900 truncate">{l.employeeName}</p>
-                  <p className="text-[12px] text-ink-500">{l.startDate} → {l.endDate} · {l.days}d</p>
+                  <p className="text-[12px] text-ink-500">{fmtRange(l.startDate, l.endDate)} · {l.days}d</p>
                 </div>
                 <Pill tone={TYPE_TONE[l.type]}>{l.type}</Pill>
               </div>

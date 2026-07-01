@@ -10,6 +10,7 @@ import {
   EMPLOYEES, DEPARTMENTS, JOB_OPENINGS, CANDIDATES, LEAVE_REQUESTS, PENDING_LEAVE,
   OUT_TODAY, KPIS, HEADCOUNT_BY_DEPT, GENDER_SPLIT, departmentById, COMPANY, ONBOARDING,
 } from '../data/mockData'
+import { fmtRange } from './date'
 
 const STOP = new Set('a an the is are was were do does of in on at to for with how many who what which whats our we have has and or me show tell about list give'.split(' '))
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9+#\s.]/g, ' ').replace(/\s+/g, ' ').trim()
@@ -113,12 +114,13 @@ export function ragQuery(raw) {
     }
   }
 
-  // --- pending leave ----------------------------------------------------------
-  if (has('pending leave', 'leave request', 'approve', 'time off request', 'pending request')) {
+  // --- leave records ----------------------------------------------------------
+  if (has('pending leave', 'leave request', 'approve', 'time off request', 'pending request', 'leave records', 'how much leave', 'leave on record')) {
+    const totalDays = LEAVE_REQUESTS.reduce((s, l) => s + l.days, 0)
     return {
-      answer: `There are ${PENDING_LEAVE.length} leave requests awaiting approval, totalling ${PENDING_LEAVE.reduce((s, l) => s + l.days, 0)} days. Oldest: ${PENDING_LEAVE[0]?.employeeName} (${PENDING_LEAVE[0]?.type}, ${PENDING_LEAVE[0]?.days}d).`,
-      sources: ['Time Off · Approvals'],
-      cards: PENDING_LEAVE.slice(0, 4).map((l) => ({ type: 'leave', name: l.employeeName, kind: l.type, days: l.days, when: `${l.startDate} → ${l.endDate}` })),
+      answer: `There are ${LEAVE_REQUESTS.length} leave entries on record, totalling ${totalDays} days across annual, sick, parental and unpaid leave.`,
+      sources: ['Time Off · Leave records'],
+      cards: LEAVE_REQUESTS.slice(0, 4).map((l) => ({ type: 'leave', name: l.employeeName, kind: l.type, days: l.days, when: fmtRange(l.startDate, l.endDate) })),
     }
   }
 

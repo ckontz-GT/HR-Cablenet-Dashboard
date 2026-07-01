@@ -6,7 +6,7 @@ import { ragSuggestions } from '../lib/rag'
 
 const CATEGORIES = [
   { icon: Users, label: 'People', qs: ['How many people work at Cablenet?', 'Show me the Network Engineering team', 'Find people who know fibre splicing'] },
-  { icon: CalendarClock, label: 'Time off', qs: ["Who's on leave today?", 'How many pending leave requests?', 'What is the average leave balance?'] },
+  { icon: CalendarClock, label: 'Time off', qs: ["Who's on leave today?", 'How much leave is on record?', 'What is the average leave balance?'] },
   { icon: Briefcase, label: 'Recruiting', qs: ['How many open roles do we have?', 'Who is in the Offer stage?', 'How many candidates are in the pipeline?'] },
 ]
 
