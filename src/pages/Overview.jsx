@@ -3,6 +3,7 @@ import { Users, CalendarClock, Briefcase, TrendingUp, ArrowRight, CheckCircle2, 
 import { HeroStat, StatCard } from '../components/StatCard'
 import { Card, CardHeader, Pill, Avatar, Button, Progress, STATUS_TONE, STAGE_TONE, Eyebrow } from '../components/ui'
 import { AreaChart, HBars } from '../components/charts'
+import { NeedsAttention } from '../components/NeedsAttention'
 import { useAssistant } from '../components/AssistantProvider'
 import {
   KPIS, HEADCOUNT_TREND, HEADCOUNT_BY_DEPT, LEAVE_REQUESTS, OUT_TODAY, ONBOARDING, ACTIVITY, FUNNEL, CANDIDATES,
@@ -25,6 +26,9 @@ export default function Overview() {
         <StatCard label="Out today" value={OUT_TODAY.length} icon={CalendarClock} tone="brand" />
         <StatCard label="Avg tenure" value={KPIS.avgTenure} suffix="yrs" icon={TrendingUp} delta={0.3} deltaLabel="y" tone="good" spark={[3.1, 3.2, 3.4, 3.3, 3.6, 3.7, KPIS.avgTenure]} />
       </div>
+
+      {/* Needs attention — certs expiring, contract renewals, probation, anniversaries */}
+      <NeedsAttention />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Headcount trend */}

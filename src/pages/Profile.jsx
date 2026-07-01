@@ -2,11 +2,12 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Mail, Phone, MapPin, Calendar, Award, Briefcase, Clock, Users2, IdCard,
   CalendarClock, Plane, Stethoscope, Baby, CircleSlash, ChevronRight, TrendingUp, Building2, GraduationCap,
+  ShieldCheck, ShieldAlert,
 } from 'lucide-react'
 import { Card, CardHeader, Pill, Avatar, Button, Progress, Eyebrow, STATUS_TONE } from '../components/ui'
 import { Donut } from '../components/charts'
 import { clsx } from '../lib/clsx'
-import { employeeById, departmentById, EMPLOYEES, LEAVE_REQUESTS } from '../data/mockData'
+import { employeeById, departmentById, EMPLOYEES, LEAVE_REQUESTS, certStatus, nextAnniversary, daysUntil } from '../data/mockData'
 
 const LEAVE_ICON = { Annual: Plane, Sick: Stethoscope, Parental: Baby, Unpaid: CircleSlash }
 const LEAVE_TONE = { Annual: 'brand', Sick: 'crit', Parental: 'info', Unpaid: 'neutral' }
@@ -33,6 +34,9 @@ export default function Profile() {
   const reports = EMPLOYEES.filter((r) => r.managerId === e.id)
   const leaves = LEAVE_REQUESTS.filter((l) => l.employeeId === e.id)
   const leavePct = Math.round((e.leave.remaining / e.leave.entitlement) * 100)
+  const anniv = nextAnniversary(e.startDate)
+  const certs = [...(e.certifications ?? [])].sort((a, b) => certStatus(a.expiryDate).days - certStatus(b.expiryDate).days)
+  const certsNeedingAttention = certs.filter((c) => certStatus(c.expiryDate).days <= 60).length
 
   return (
     <div className="flex flex-col gap-6 animate-rise">
@@ -157,6 +161,15 @@ export default function Profile() {
               <DetailRow label="Employee ID" value={e.id} mono />
               <DetailRow label="Tenure" value={`${e.tenureYears} years`} />
               <DetailRow label="Performance" valueEl={<Pill tone={PERF_TONE[e.performance]}>{e.performance}</Pill>} />
+              {e.contractEndDate && (() => {
+                const d = daysUntil(e.contractEndDate)
+                return <DetailRow label="Contract ends" valueEl={<Pill tone={d <= 14 ? 'crit' : d <= 45 ? 'warn' : 'neutral'}>{e.contractEndDate}</Pill>} />
+              })()}
+              {e.probationEndDate && (() => {
+                const d = daysUntil(e.probationEndDate)
+                return <DetailRow label="Probation ends" valueEl={<Pill tone={d <= 7 ? 'crit' : d <= 45 ? 'warn' : 'neutral'}>{e.probationEndDate}</Pill>} />
+              })()}
+              <DetailRow label="Next anniversary" valueEl={<Pill tone={anniv.days <= 30 ? 'flare' : 'neutral'}>{anniv.years}y · {anniv.date}</Pill>} />
             </div>
           </Card>
 
@@ -172,6 +185,28 @@ export default function Profile() {
                   </div>
                 </div>
               ))}
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader title="Certifications" subtitle={`${certs.length} on record${certsNeedingAttention ? ` · ${certsNeedingAttention} need attention` : ''}`} icon={ShieldCheck} />
+            <div className="p-5 pt-3 flex flex-col gap-2.5">
+              {certs.map((c) => {
+                const st = certStatus(c.expiryDate)
+                return (
+                  <div key={c.name} className="flex items-center gap-3 rounded-xl border border-ink-200/70 p-2.5">
+                    <span className={clsx('grid place-items-center size-9 rounded-xl shrink-0',
+                      st.tone === 'crit' ? 'bg-crit-50 text-crit-700' : st.tone === 'warn' ? 'bg-warn-50 text-warn-700' : 'bg-good-50 text-good-700')}>
+                      {st.tone === 'good' ? <ShieldCheck size={16} /> : <ShieldAlert size={16} />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-600 text-ink-900 truncate">{c.name}</p>
+                      <p className="text-[11.5px] text-ink-500">Expires {c.expiryDate}</p>
+                    </div>
+                    <Pill tone={st.tone}>{st.label}</Pill>
+                  </div>
+                )
+              })}
             </div>
           </Card>
 

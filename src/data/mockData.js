@@ -17,6 +17,21 @@ function rng(seed) {
 const pick = (r, arr) => arr[Math.floor(r() * arr.length)]
 const between = (r, lo, hi) => lo + Math.floor(r() * (hi - lo + 1))
 
+// Reference "today" for the dashboard — keeps every derived date (cert expiry,
+// contract renewal, probation, anniversaries) coherent against the mock data.
+export const TODAY = '2026-07-01'
+
+export function daysUntil(dateStr, from = TODAY) {
+  const a = new Date(`${from}T00:00:00`)
+  const b = new Date(`${dateStr}T00:00:00`)
+  return Math.round((b - a) / 86400000)
+}
+function addDays(dateStr, days) {
+  const d = new Date(`${dateStr}T00:00:00`)
+  d.setDate(d.getDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
 export const COMPANY = {
   name: 'Cablenet',
   unit: 'Cablenet Communication Systems',
@@ -113,6 +128,58 @@ function makeEducation(r, deptId, startYear) {
   return edu
 }
 
+// --- Certifications -----------------------------------------------------------
+// A company-wide compliance certification everyone must hold, plus
+// department-specific technical/professional certifications on top.
+const COMMON_CERT = { name: 'Health & Safety Induction', validityYears: 2 }
+const CERT_CATALOG = {
+  network: [{ name: 'CCNA', validityYears: 3 }, { name: 'CCNP Enterprise', validityYears: 3 }, { name: 'JNCIA-Junos', validityYears: 3 }],
+  field: [{ name: 'Fibre Optic Installer (FOA)', validityYears: 2 }, { name: 'OTDR Certified Technician', validityYears: 2 }, { name: 'Working at Heights', validityYears: 1 }],
+  care: [{ name: 'GDPR Data Handling', validityYears: 2 }, { name: 'Certified Contact Centre Professional', validityYears: 3 }],
+  sales: [{ name: 'Telecom Sales Certification', validityYears: 2 }, { name: 'GDPR Data Handling', validityYears: 2 }],
+  marketing: [{ name: 'Google Ads Certified', validityYears: 1 }, { name: 'HubSpot Inbound Marketing', validityYears: 2 }],
+  product: [{ name: 'AWS Certified Developer', validityYears: 3 }, { name: 'Certified Scrum Master', validityYears: 2 }],
+  it: [{ name: 'CompTIA Security+', validityYears: 3 }, { name: 'Microsoft Azure Administrator', validityYears: 2 }, { name: 'CISSP', validityYears: 3 }],
+  finance: [{ name: 'ACCA', validityYears: 3 }, { name: 'Certified Payroll Professional', validityYears: 2 }],
+  people: [{ name: 'CIPD Level 5', validityYears: 3 }, { name: 'GDPR Data Handling', validityYears: 2 }],
+}
+
+// Certification status from its expiry date — used for both the profile card
+// and the org-wide "needs attention" feed.
+export function certStatus(expiryDate) {
+  const days = daysUntil(expiryDate)
+  if (days < 0) return { key: 'expired', label: 'Expired', tone: 'crit', days }
+  if (days <= 30) return { key: 'critical', label: 'Expiring soon', tone: 'crit', days }
+  if (days <= 60) return { key: 'warning', label: 'Renew soon', tone: 'warn', days }
+  return { key: 'valid', label: 'Valid', tone: 'good', days }
+}
+
+// Next work anniversary (same month/day, whichever year is upcoming).
+export function nextAnniversary(startDate, from = TODAY) {
+  const start = new Date(`${startDate}T00:00:00`)
+  const today = new Date(`${from}T00:00:00`)
+  let year = today.getFullYear()
+  let anniv = new Date(year, start.getMonth(), start.getDate())
+  if (anniv < today) { year += 1; anniv = new Date(year, start.getMonth(), start.getDate()) }
+  const iso = anniv.toISOString().slice(0, 10)
+  return { date: iso, years: year - start.getFullYear(), days: daysUntil(iso, from) }
+}
+
+// 2–3 certifications per employee, expiries spread widely so some are already
+// overdue, some urgent, and most comfortably valid — realistic for a telecom
+// with mandatory H&S/technical compliance training.
+function makeCertifications(r, deptId) {
+  const pool = CERT_CATALOG[deptId] ?? CERT_CATALOG.care
+  const chosen = [COMMON_CERT, pick(r, pool)]
+  const extra = pool.find((c) => c.name !== chosen[1].name)
+  if (extra && r() < 0.55) chosen.push(extra)
+  return chosen.map((c) => {
+    const expiry = addDays(TODAY, between(r, -40, 620))
+    const issue = addDays(expiry, -c.validityYears * 365)
+    return { name: c.name, issueDate: issue, expiryDate: expiry, validityYears: c.validityYears }
+  })
+}
+
 const STATUS_WEIGHTS = ['Active', 'Active', 'Active', 'Active', 'Active', 'Active', 'Active', 'On leave', 'Onboarding']
 
 function makeEmployees() {
@@ -137,6 +204,7 @@ function makeEmployees() {
       const nSkills = between(r, 3, 5)
       const skills = [...skillPool].sort(() => r() - 0.5).slice(0, nSkills)
       const status = pick(r, STATUS_WEIGHTS)
+      const employmentType = pick(r, TYPES)
       const gender = r() > 0.46 ? 'F' : 'M'
       const perf = pick(r, ['Exceeds', 'Exceeds', 'Meets', 'Meets', 'Meets', 'Developing'])
       const annualEntitlement = 21 + (tenure > 5 ? 4 : tenure > 2 ? 2 : 0)
@@ -152,7 +220,7 @@ function makeEmployees() {
         department: dept.id,
         departmentName: dept.name,
         location: pick(r, LOCATIONS),
-        employmentType: pick(r, TYPES),
+        employmentType,
         status,
         gender,
         email: `${first}.${last}@cablenet.com.cy`.toLowerCase(),
@@ -163,6 +231,11 @@ function makeEmployees() {
         hue: dept.hue,
         skills,
         education: makeEducation(r, dept.id, startYear),
+        certifications: makeCertifications(r, dept.id),
+        // Contract employees get a renewal date; new/onboarding hires get a
+        // probation review date — both feed the "needs attention" feed.
+        contractEndDate: employmentType === 'Contract' ? addDays(TODAY, between(r, -20, 270)) : null,
+        probationEndDate: status === 'Onboarding' ? addDays(TODAY, between(r, -12, 55)) : null,
         leave: { entitlement: annualEntitlement, taken, remaining: annualEntitlement - taken },
       })
       id++
@@ -283,6 +356,60 @@ export const ONBOARDING = EMPLOYEES.filter((e) => e.status === 'Onboarding').sli
   }
 })
 
+// --- Needs attention (org-wide) ------------------------------------------------
+// Aggregates certification expiries, contract renewals, probation endings and
+// upcoming work anniversaries into a single, urgency-sorted feed for HR — the
+// things that need a decision or a nudge, in one place.
+const ATTENTION_WINDOW_DAYS = 45
+
+export const NEEDS_ATTENTION = (() => {
+  const items = []
+  EMPLOYEES.forEach((e) => {
+    e.certifications.forEach((c) => {
+      const st = certStatus(c.expiryDate)
+      if (st.days > ATTENTION_WINDOW_DAYS) return
+      items.push({
+        id: `cert-${e.id}-${c.name}`, kind: 'certification', employeeId: e.id, employeeName: e.name,
+        initials: e.initials, hue: e.hue, department: e.departmentName,
+        label: c.name, date: c.expiryDate, days: st.days, tone: st.tone,
+        detail: st.days < 0 ? `Expired ${Math.abs(st.days)}d ago` : st.days === 0 ? 'Expires today' : `Expires in ${st.days}d`,
+      })
+    })
+    if (e.contractEndDate) {
+      const days = daysUntil(e.contractEndDate)
+      if (days <= ATTENTION_WINDOW_DAYS) {
+        items.push({
+          id: `contract-${e.id}`, kind: 'contract', employeeId: e.id, employeeName: e.name,
+          initials: e.initials, hue: e.hue, department: e.departmentName,
+          label: 'Contract renewal', date: e.contractEndDate, days, tone: days <= 14 ? 'crit' : 'warn',
+          detail: days < 0 ? `Ended ${Math.abs(days)}d ago` : days === 0 ? 'Ends today' : `Renews in ${days}d`,
+        })
+      }
+    }
+    if (e.probationEndDate) {
+      const days = daysUntil(e.probationEndDate)
+      if (days <= ATTENTION_WINDOW_DAYS) {
+        items.push({
+          id: `probation-${e.id}`, kind: 'probation', employeeId: e.id, employeeName: e.name,
+          initials: e.initials, hue: e.hue, department: e.departmentName,
+          label: 'Probation review', date: e.probationEndDate, days, tone: days <= 7 ? 'crit' : 'warn',
+          detail: days < 0 ? `Ended ${Math.abs(days)}d ago` : days === 0 ? 'Ends today' : `Ends in ${days}d`,
+        })
+      }
+    }
+    const anniv = nextAnniversary(e.startDate)
+    if (anniv.years >= 1 && anniv.days <= ATTENTION_WINDOW_DAYS) {
+      items.push({
+        id: `anniversary-${e.id}`, kind: 'anniversary', employeeId: e.id, employeeName: e.name,
+        initials: e.initials, hue: e.hue, department: e.departmentName,
+        label: `${anniv.years}-year anniversary`, date: anniv.date, days: anniv.days, tone: 'info',
+        detail: anniv.days === 0 ? 'Today' : `In ${anniv.days}d`,
+      })
+    }
+  })
+  return items.sort((a, b) => a.days - b.days)
+})()
+
 // --- Analytics / trends -------------------------------------------------------
 export const HEADCOUNT_TREND = (() => {
   const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
@@ -343,4 +470,6 @@ export const KPIS = {
   offerAcceptance: 86,
   timeToHireDays: 27,
   candidates: CANDIDATES.length,
+  needsAttention: NEEDS_ATTENTION.length,
+  needsAttentionOverdue: NEEDS_ATTENTION.filter((i) => i.days < 0).length,
 }
