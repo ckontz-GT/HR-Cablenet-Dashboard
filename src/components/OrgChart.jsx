@@ -18,6 +18,7 @@ import { EMPLOYEES, DEPARTMENTS, COMPANY, employeeById, departmentById, NEEDS_AT
 const STATUS_DOT = { Active: 'bg-good-500', 'On leave': 'bg-warn-500', Onboarding: 'bg-info-500' }
 const ATTENTION_IDS = new Set(NEEDS_ATTENTION.map((i) => i.employeeId))
 const attentionCountFor = (id) => NEEDS_ATTENTION.filter((i) => i.employeeId === id).length
+const deptAttentionCount = (deptId) => EMPLOYEES.filter((e) => e.department === deptId && ATTENTION_IDS.has(e.id)).length
 const EMPTY_SET = new Set()
 
 const HANDLES = {
@@ -46,17 +47,27 @@ function DeptNode({ data }) {
   const h = HANDLES[data.orientation]
   return (
     <div
-      className={clsx('rounded-2xl text-white px-3.5 py-3 shadow-md w-[200px] cursor-pointer transition-opacity duration-200 hover:brightness-105', data.dimmed && 'opacity-25')}
+      className={clsx('relative rounded-2xl text-white px-3.5 py-3 shadow-md w-[200px] cursor-pointer transition-opacity duration-200 hover:brightness-105', data.dimmed && 'opacity-25')}
       style={{ background: `linear-gradient(135deg, hsl(${data.hue} 52% 46%), hsl(${data.hue + 28} 58% 36%))` }}
-      title="Click to focus this team"
+      title={data.expanded ? 'Click to collapse' : 'Click to expand'}
     >
       <Handle type="target" position={h.target} style={hidden} />
       <Handle type="source" position={h.source} style={hidden} />
-      <p className="font-display font-700 text-[14px] leading-tight truncate">{data.name}</p>
-      <div className="flex items-center gap-2 mt-1.5 text-[12px] text-white/80">
-        <span className="inline-flex items-center gap-1"><Users size={12} />{data.count}</span>
-        <span className="text-white/50">·</span>
-        <span className="truncate">Lead: {data.lead}</span>
+      {data.attentionCount > 0 && (
+        <span className="absolute -top-1.5 -right-1.5 grid place-items-center min-w-[19px] h-[19px] px-1 rounded-full bg-crit-500 ring-2 ring-white text-[10.5px] font-700 text-white" title={`${data.attentionCount} need attention — click to expand`}>
+          {data.attentionCount}
+        </span>
+      )}
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-display font-700 text-[14px] leading-tight truncate">{data.name}</p>
+          <div className="flex items-center gap-2 mt-1.5 text-[12px] text-white/80">
+            <span className="inline-flex items-center gap-1"><Users size={12} />{data.count}</span>
+            <span className="text-white/50">·</span>
+            <span className="truncate">Lead: {data.lead}</span>
+          </div>
+        </div>
+        <ChevronDown size={16} className={clsx('shrink-0 text-white/75 transition-transform duration-200', data.expanded && 'rotate-180')} />
       </div>
     </div>
   )
@@ -112,13 +123,21 @@ const rawEdge = (source, target, hue, thick) => ({
   style: { stroke: `hsl(${hue} 35% 70%)`, strokeWidth: thick ? 2 : 1.5 },
 })
 
-function buildLayout(depts, orientation) {
-  return orientation === 'horizontal' ? buildHorizontal(depts) : buildVertical(depts)
+const COLLAPSED_W = 220 // band width reserved for a collapsed department (just the card + margin)
+
+function buildLayout(depts, orientation, expandedIds) {
+  return orientation === 'horizontal' ? buildHorizontal(depts, expandedIds) : buildVertical(depts, expandedIds)
 }
 
+const deptNodeData = (dept, team, lead, orientation, expanded) => ({
+  name: dept.name, count: team.length, lead: lead?.firstName ?? '—', hue: dept.hue, orientation,
+  dimmed: false, expanded, attentionCount: deptAttentionCount(dept.id),
+})
+
 // Top-down: departments side by side (uses the screen's wide axis for breadth,
-// where there's plenty of room for many people).
-function buildVertical(depts) {
+// where there's plenty of room for many people). Collapsed departments only
+// reserve enough width for their own card, not their (hidden) team.
+function buildVertical(depts, expandedIds) {
   const nodes = []
   const edges = []
   let cursorX = 0
@@ -127,14 +146,15 @@ function buildVertical(depts) {
     const team = EMPLOYEES.filter((e) => e.department === dept.id)
     const lead = team.find((e) => e.isLead) ?? team[0]
     const members = team.filter((e) => e.id !== lead?.id)
-    const perRow = Math.min(MAX_PER_ROW, Math.max(1, members.length))
-    const bandWidth = perRow * COL
+    const expanded = expandedIds.has(dept.id)
+    const perRow = expanded ? Math.min(MAX_PER_ROW, Math.max(1, members.length)) : 1
+    const bandWidth = expanded ? perRow * COL : COLLAPSED_W
     const center = cursorX + bandWidth / 2
 
     nodes.push({ id: dept.id, type: 'dept', position: { x: center - 100, y: Y.dept },
-      data: { name: dept.name, count: team.length, lead: lead?.firstName ?? '—', hue: dept.hue, orientation: 'vertical', dimmed: false } })
+      data: deptNodeData(dept, team, lead, 'vertical', expanded) })
 
-    if (lead) {
+    if (lead && expanded) {
       nodes.push({ id: lead.id, type: 'person', position: { x: center - 92, y: Y.lead }, data: staticPersonData(lead, 'vertical') })
       edges.push(rawEdge(dept.id, lead.id, dept.hue, false))
 
@@ -172,7 +192,7 @@ const LEAD_X = 230
 const MEMBER_START_X = 460
 const MEMBER_GAP = 200
 
-function buildHorizontal(depts) {
+function buildHorizontal(depts, expandedIds) {
   const nodes = []
   const edges = []
   let y = 0
@@ -181,11 +201,12 @@ function buildHorizontal(depts) {
     const team = EMPLOYEES.filter((e) => e.department === dept.id)
     const lead = team.find((e) => e.isLead) ?? team[0]
     const members = team.filter((e) => e.id !== lead?.id)
+    const expanded = expandedIds.has(dept.id)
 
     nodes.push({ id: dept.id, type: 'dept', position: { x: 0, y: y - 30 },
-      data: { name: dept.name, count: team.length, lead: lead?.firstName ?? '—', hue: dept.hue, orientation: 'horizontal', dimmed: false } })
+      data: deptNodeData(dept, team, lead, 'horizontal', expanded) })
 
-    if (lead) {
+    if (lead && expanded) {
       nodes.push({ id: lead.id, type: 'person', position: { x: LEAD_X, y: y - 38 }, data: staticPersonData(lead, 'horizontal') })
       edges.push(rawEdge(dept.id, lead.id, dept.hue, false))
 
@@ -348,8 +369,10 @@ function Flow({ deptFilter, query, statusFilter, attentionOnly }) {
   const [orientation, setOrientation] = useState('vertical')
   const [selectedId, setSelectedId] = useState(null)
   const [matchIndex, setMatchIndex] = useState(0)
+  const [expandedIds, setExpandedIds] = useState(EMPTY_SET) // all departments start collapsed
   const flowRef = useRef(null)
   const didMount = useRef(false)
+  const pendingFocusRef = useRef(null)
 
   const depts = deptFilter === 'all' ? DEPARTMENTS : DEPARTMENTS.filter((d) => d.id === deptFilter)
   const q = query.toLowerCase().trim()
@@ -357,9 +380,29 @@ function Flow({ deptFilter, query, statusFilter, attentionOnly }) {
   const matches = useCallback((e) => {
     if (statusFilter !== 'all' && e.status !== statusFilter) return false
     if (attentionOnly && !ATTENTION_IDS.has(e.id)) return false
-    if (q && !(`${e.name} ${e.title} ${e.location} ${e.skills.join(' ')}`.toLowerCase().includes(q))) return false
+    if (q && !(`${e.name} ${e.title} ${e.departmentName} ${e.location} ${e.skills.join(' ')}`.toLowerCase().includes(q))) return false
     return true
   }, [q, statusFilter, attentionOnly])
+
+  // Filtering to one specific team implies wanting to see it, so auto-expand it.
+  useEffect(() => {
+    if (deptFilter === 'all') return
+    setExpandedIds((cur) => (cur.has(deptFilter) ? cur : new Set(cur).add(deptFilter)))
+  }, [deptFilter])
+
+  // A text search should always be able to surface matches, even inside a
+  // collapsed department — auto-expand any department containing one. This
+  // only ever adds; clearing the search doesn't re-collapse anything.
+  useEffect(() => {
+    if (!q) return
+    const deptsWithMatches = new Set(EMPLOYEES.filter(matches).map((e) => e.department))
+    setExpandedIds((cur) => {
+      let changed = false
+      const next = new Set(cur)
+      deptsWithMatches.forEach((d) => { if (!next.has(d)) { next.add(d); changed = true } })
+      return changed ? next : cur
+    })
+  }, [q, matches])
 
   const chainIds = useMemo(() => computeChainIds(selectedId), [selectedId])
 
@@ -374,18 +417,35 @@ function Flow({ deptFilter, query, statusFilter, attentionOnly }) {
 
   useEffect(() => { setMatchIndex(0) }, [q, deptFilter, statusFilter, attentionOnly])
 
-  const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => buildLayout(depts, orientation), [deptFilter, orientation])
+  const { nodes: layoutNodes, edges: layoutEdges } = useMemo(
+    () => buildLayout(depts, orientation, expandedIds),
+    [deptFilter, orientation, expandedIds],
+  )
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
 
-  // Structural rebuild (dept filter / orientation) — full relayout + refit, emphasis reapplied
-  // immediately from current filters/selection so it never looks stale for a frame.
+  // Structural rebuild (dept filter / orientation / expand-collapse) — full relayout,
+  // emphasis reapplied immediately so it never looks stale for a frame. The camera
+  // either fits everything (filter/orientation change, or a collapse) or focuses on
+  // the department that was just expanded, per pendingFocusRef set from onNodeClick.
   useEffect(() => {
     const { newNodes, newEdges } = applyEmphasis(layoutNodes, layoutEdges, matches, chainIds, selectedId)
     setNodes(newNodes)
     setEdges(newEdges)
-    if (didMount.current) requestAnimationFrame(() => flowRef.current?.fitView({ padding: 0.18, duration: 450 }))
-    else didMount.current = true
+    if (didMount.current) {
+      const focusDeptId = pendingFocusRef.current
+      pendingFocusRef.current = null
+      requestAnimationFrame(() => {
+        if (focusDeptId) {
+          const ids = newNodes.filter((n) => n.id === focusDeptId || employeeById(n.id)?.department === focusDeptId).map((n) => n.id)
+          flowRef.current?.fitView({ nodes: ids.map((id) => ({ id })), duration: 500, padding: 0.3, maxZoom: 1.4 })
+        } else {
+          flowRef.current?.fitView({ padding: 0.18, duration: 450 })
+        }
+      })
+    } else {
+      didMount.current = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layoutNodes, layoutEdges])
 
@@ -405,12 +465,19 @@ function Flow({ deptFilter, query, statusFilter, attentionOnly }) {
     if (node.type === 'person') {
       setSelectedId((cur) => (cur === node.data.empId ? null : node.data.empId))
     } else if (node.type === 'dept') {
-      const team = EMPLOYEES.filter((e) => e.department === node.id)
-      focusOnIds([node.id, ...team.map((e) => e.id)])
+      setExpandedIds((cur) => {
+        const next = new Set(cur)
+        const willExpand = !next.has(node.id)
+        if (willExpand) next.add(node.id)
+        else next.delete(node.id)
+        pendingFocusRef.current = willExpand ? node.id : null
+        return next
+      })
     } else {
+      pendingFocusRef.current = null
       fitAll()
     }
-  }, [focusOnIds, fitAll])
+  }, [fitAll])
 
   const onFocusTeam = useCallback(() => {
     if (!selectedId) return
