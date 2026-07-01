@@ -196,11 +196,11 @@ function WeekStrip() {
   ]
   const max = Math.max(...days.map((d) => d.out))
   return (
-    <div className="flex items-end justify-between gap-2 h-40">
+    <div className="flex justify-between gap-2 h-40">
       {days.map((day) => (
-        <div key={day.d} className="flex-1 flex flex-col items-center gap-2">
+        <div key={day.d} className="flex-1 h-full flex flex-col items-center gap-2">
           <span className="text-[12px] font-600 text-ink-700 tnum">{day.out}</span>
-          <div className="w-full rounded-lg bg-ink-100 relative overflow-hidden" style={{ height: '100%' }}>
+          <div className="w-full flex-1 rounded-lg bg-ink-100 relative overflow-hidden">
             <div className={clsx('absolute bottom-0 inset-x-0 rounded-lg transition-[height] duration-700', day.today ? 'accent-gradient' : 'bg-brand-200')} style={{ height: `${(day.out / max) * 100}%` }} />
           </div>
           <div className="text-center">

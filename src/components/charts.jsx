@@ -80,8 +80,15 @@ export function BarPairs({ data, height = 200 }) {
 }
 
 // --- Horizontal bars ----------------------------------------------------------
+// Default palette is a single brand-toned ramp keyed to rank (deepest for the
+// largest value, lightening down the list) rather than a different hue per
+// row — a plain magnitude comparison reads as designed, not auto-assigned.
 export function HBars({ data, valueKey = 'count', labelKey = 'name', colorFn }) {
   const max = Math.max(...data.map((d) => d[valueKey])) || 1
+  const rankColor = (i) => {
+    const t = data.length > 1 ? i / (data.length - 1) : 0
+    return `hsl(262 48% ${38 + t * 26}%)`
+  }
   return (
     <div className="flex flex-col gap-2.5">
       {data.map((d, i) => (
@@ -90,7 +97,7 @@ export function HBars({ data, valueKey = 'count', labelKey = 'name', colorFn }) 
           <div className="flex-1 h-7 rounded-lg bg-ink-100/70 overflow-hidden relative">
             <div
               className="h-full rounded-lg transition-[width] duration-700 flex items-center justify-end pr-2"
-              style={{ width: `${(d[valueKey] / max) * 100}%`, background: colorFn ? colorFn(d) : `linear-gradient(90deg, hsl(${d.hue ?? 265} 60% 58%), hsl(${(d.hue ?? 265) + 30} 62% 48%))` }}
+              style={{ width: `${(d[valueKey] / max) * 100}%`, background: colorFn ? colorFn(d, i) : rankColor(i) }}
             >
               <span className="text-[11px] font-600 text-white tnum">{d[valueKey]}</span>
             </div>

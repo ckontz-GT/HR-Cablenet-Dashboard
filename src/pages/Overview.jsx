@@ -147,11 +147,11 @@ function FunnelMini() {
   const colors = ['#cfc8db', '#9466d0', '#7c3aed', '#ff944d', '#15b79e']
   const max = Math.max(...FUNNEL.map((f) => f.count)) || 1
   return (
-    <div className="flex items-end gap-2 h-44">
+    <div className="flex gap-2 h-44">
       {FUNNEL.map((f, i) => (
-        <div key={f.stage} className="flex-1 flex flex-col items-center justify-end gap-2">
+        <div key={f.stage} className="flex-1 h-full flex flex-col items-center justify-end gap-2">
           <span className="font-display font-700 text-ink-900 tnum text-lg">{f.count}</span>
-          <div className="w-full rounded-t-xl transition-[height] duration-700" style={{ height: `${Math.max(8, (f.count / max) * 100)}%`, background: colors[i] }} />
+          <div className="w-full rounded-t-lg transition-[height] duration-700" style={{ height: `${Math.max(8, (f.count / max) * 100)}%`, background: colors[i] }} />
           <span className="text-[12px] text-ink-500">{f.stage}</span>
         </div>
       ))}
