@@ -1,6 +1,6 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, LayoutGrid, List, Network, X, MapPin, Users2, ChevronRight, Minimize2, MessageCircle } from 'lucide-react'
+import { Search, LayoutGrid, List, Network, X, MapPin, Users2, ChevronRight, Minimize2, MessageCircle, BellRing } from 'lucide-react'
 import { Card, Pill, Avatar, Button, STATUS_TONE } from '../components/ui'
 import { OrgCanvas } from '../components/OrgChart'
 import { Slashes } from '../components/Logo'
@@ -14,14 +14,22 @@ export default function Directory() {
   const [query, setQuery] = useState('')
   const [dept, setDept] = useState('all')
   const [status, setStatus] = useState('all')
+  const [attentionOnly, setAttentionOnly] = useState(false)
   const [view, setView] = useState('org') // graph is the default view
+  const searchRef = useRef(null)
 
   const open = (id) => navigate(`/directory/${id}`)
 
-  // Esc exits the full-screen graph
+  // Esc exits the full-screen graph; "/" jumps to the highlight-search box
   useEffect(() => {
     if (view !== 'org') return
-    const onKey = (e) => { if (e.key === 'Escape') setView('grid') }
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setView('grid'); return }
+      if (e.key === '/' && document.activeElement !== searchRef.current) {
+        e.preventDefault()
+        searchRef.current?.focus()
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [view])
@@ -40,22 +48,26 @@ export default function Directory() {
   if (view === 'org') {
     return (
       <div className="fixed inset-0 z-40 bg-ink-50 flex flex-col animate-scale-in">
-        <header className="h-15 shrink-0 border-b border-ink-200 bg-white flex items-center gap-3 px-4 py-2.5">
+        <header className="shrink-0 border-b border-ink-200 bg-white flex items-center gap-3 px-4 py-2.5 flex-wrap">
           <div className="flex items-center gap-2.5 shrink-0">
             <Slashes height={18} />
-            <div className="leading-tight">
-              <p className="font-display font-700 text-ink-900 text-[15px]">Org chart</p>
-              <p className="text-[11.5px] text-ink-500">{EMPLOYEES.length} people · {DEPARTMENTS.length} teams</p>
-            </div>
+            <p className="font-display font-700 text-ink-900 text-[15px]">Org chart</p>
           </div>
 
-          <div className="hidden md:flex items-center gap-2 flex-1 max-w-xl ml-3">
-            <div className="flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 h-10 px-3 flex-1 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition-all">
+          <div className="hidden md:flex items-center gap-2 flex-1 flex-wrap ml-3">
+            <div className="flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 h-10 px-3 flex-1 min-w-[180px] focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition-all">
               <Search size={16} className="text-ink-400" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Highlight people…" className="flex-1 bg-transparent outline-none text-[13.5px] text-ink-800 placeholder:text-ink-400" />
+              <input ref={searchRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Highlight people… (press / )" className="flex-1 bg-transparent outline-none text-[13.5px] text-ink-800 placeholder:text-ink-400" />
               {query && <button onClick={() => setQuery('')} aria-label="Clear"><X size={15} className="text-ink-400 hover:text-ink-700" /></button>}
             </div>
             <Select value={dept} onChange={setDept} compact options={[{ v: 'all', l: 'All teams' }, ...DEPARTMENTS.map((d) => ({ v: d.id, l: d.name }))]} />
+            <Select value={status} onChange={setStatus} compact options={[{ v: 'all', l: 'Any status' }, { v: 'Active', l: 'Active' }, { v: 'On leave', l: 'On leave' }, { v: 'Onboarding', l: 'Onboarding' }]} />
+            <button
+              onClick={() => setAttentionOnly((v) => !v)}
+              className={clsx('inline-flex items-center gap-1.5 h-10 px-3 rounded-xl border text-[13px] font-500 transition shrink-0', attentionOnly ? 'bg-crit-50 border-crit-500/40 text-crit-700' : 'bg-white border-ink-200 text-ink-600 hover:border-ink-300')}
+            >
+              <BellRing size={14} /> Needs attention
+            </button>
           </div>
 
           <div className="ml-auto flex items-center gap-2">
@@ -65,7 +77,7 @@ export default function Directory() {
         </header>
 
         <div className="flex-1 min-h-0">
-          <OrgCanvas deptFilter={dept} query={query} />
+          <OrgCanvas deptFilter={dept} query={query} statusFilter={status} attentionOnly={attentionOnly} />
         </div>
       </div>
     )
