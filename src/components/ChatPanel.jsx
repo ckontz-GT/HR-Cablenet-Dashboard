@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
-import { X, RotateCcw, Sparkles } from 'lucide-react'
+import { X, RotateCcw } from 'lucide-react'
 import { useAssistant } from './AssistantProvider'
 import { ChatView } from './ChatView'
+import { SignalMark } from './Logo'
 
 export function ChatPanel() {
   const { open, setOpen, clear } = useAssistant()
@@ -19,9 +20,9 @@ export function ChatPanel() {
       <aside className="relative w-full max-w-[440px] h-full bg-white shadow-2xl flex flex-col animate-slide-in">
         <header className="shrink-0 bg-signal text-white px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="grid place-items-center size-9 rounded-xl glass"><Sparkles size={18} /></span>
+            <SignalMark size={34} />
             <div>
-              <p className="font-display font-600 text-[15px] leading-tight">Ask HR</p>
+              <p className="font-display font-600 text-[15px] leading-tight">Signal</p>
               <p className="text-[12px] text-white/70 leading-tight">Cablenet assistant</p>
             </div>
           </div>

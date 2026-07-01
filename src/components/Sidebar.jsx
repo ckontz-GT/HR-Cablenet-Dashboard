@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, CalendarDays, BarChart3, Briefcase, ScanLine, Sparkles, ChevronRight, LogOut, Info } from 'lucide-react'
-import { Logo } from './Logo'
+import { LayoutDashboard, Users, CalendarDays, BarChart3, Briefcase, ScanLine, ChevronRight, LogOut, Info } from 'lucide-react'
+import { Logo, SignalMark } from './Logo'
 import { useAssistant } from './AssistantProvider'
 import { useAuth } from './AuthProvider'
 import { clsx } from '../lib/clsx'
@@ -84,9 +84,9 @@ export function Sidebar({ onNavigate }) {
           className="w-full text-left rounded-2xl glass p-3.5 hover:bg-white/15 transition group"
         >
           <div className="flex items-center gap-2.5">
-            <span className="grid place-items-center size-9 rounded-xl accent-gradient shrink-0"><Sparkles size={17} /></span>
+            <SignalMark size={36} />
             <div className="flex-1 min-w-0">
-              <p className="font-display font-600 text-[14px] leading-tight">Ask HR</p>
+              <p className="font-display font-600 text-[14px] leading-tight">Signal</p>
               <p className="text-[12px] text-white/60 leading-tight truncate">Query your people data</p>
             </div>
             <ChevronRight size={16} className="text-white/50 group-hover:translate-x-0.5 transition-transform" />

@@ -70,7 +70,7 @@ export function ragQuery(raw) {
   // --- greetings / help -------------------------------------------------------
   if (/^(hi|hey|hello|yo|sup)\b/.test(n) || n === 'help') {
     return {
-      answer: `Hi! I'm the Cablenet HR assistant. I answer from your live HR data — people, time off, recruiting, analytics. Try one of the suggestions below.`,
+      answer: `Hi! I'm Signal, the Cablenet HR assistant. I answer from your live HR data — people, time off, recruiting, analytics. Try one of the suggestions below.`,
       sources: ['Assistant'], cards: [], chips: SUGGESTIONS.slice(0, 4),
     }
   }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Bell, Sparkles, Menu, CornerDownLeft } from 'lucide-react'
+import { Search, Bell, MessageCircle, Menu, CornerDownLeft } from 'lucide-react'
 import { useAssistant } from './AssistantProvider'
 import { Button, IconButton, Avatar } from './ui'
 import { EMPLOYEES, departmentById } from '../data/mockData'
@@ -52,7 +52,7 @@ export function Topbar({ title, subtitle, onMenu }) {
               onChange={(e) => setQ(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setTimeout(() => setFocused(false), 150)}
-              placeholder="Search people or ask HR…"
+              placeholder="Search people or ask Signal…"
               className="flex-1 bg-transparent outline-none text-[14px] text-ink-800 placeholder:text-ink-400 min-w-0"
             />
             <kbd className="hidden lg:inline text-[10px] text-ink-400 bg-ink-100 rounded px-1.5 py-0.5 font-mono">↵</kbd>
@@ -87,13 +87,13 @@ export function Topbar({ title, subtitle, onMenu }) {
                   onMouseDown={(ev) => { ev.preventDefault(); send(q); setOpen(true); setQ('') }}
                   className="w-full flex items-center gap-2.5 px-3 py-3 hover:bg-ink-50 transition text-left"
                 >
-                  <span className="grid place-items-center size-8 rounded-lg bg-brand-50 text-brand-600 shrink-0"><Sparkles size={15} /></span>
-                  <span className="text-[13px] text-ink-700">No people match — <span className="font-600 text-ink-900">ask HR</span> “{q}”</span>
+                  <span className="grid place-items-center size-8 rounded-lg bg-brand-50 text-brand-600 shrink-0"><MessageCircle size={15} /></span>
+                  <span className="text-[13px] text-ink-700">No people match — <span className="font-600 text-ink-900">ask Signal</span> “{q}”</span>
                 </button>
               )}
               {results.length > 0 && (
                 <div className="flex items-center gap-1.5 px-3 py-2 border-t border-ink-100 text-[11.5px] text-ink-400">
-                  <CornerDownLeft size={12} /> Enter to open · or <button type="button" onMouseDown={(ev) => { ev.preventDefault(); send(q); setOpen(true); setQ('') }} className="text-brand-600 font-500 hover:underline">ask HR instead</button>
+                  <CornerDownLeft size={12} /> Enter to open · or <button type="button" onMouseDown={(ev) => { ev.preventDefault(); send(q); setOpen(true); setQ('') }} className="text-brand-600 font-500 hover:underline">ask Signal instead</button>
                 </div>
               )}
             </div>
@@ -101,7 +101,7 @@ export function Topbar({ title, subtitle, onMenu }) {
         </form>
 
         <div className="flex items-center gap-1 ml-auto md:ml-0">
-          <Button variant="primary" size="sm" icon={Sparkles} className="hidden sm:inline-flex" onClick={() => setOpen(true)}>Ask HR</Button>
+          <Button variant="primary" size="sm" icon={MessageCircle} className="hidden sm:inline-flex" onClick={() => setOpen(true)}>Ask Signal</Button>
           <IconButton icon={Search} label="Search" className="md:hidden" onClick={() => setOpen(true)} />
           <div className="relative">
             <IconButton icon={Bell} label="Notifications" />

@@ -1,6 +1,7 @@
-import { Sparkles, Users, CalendarClock, Briefcase, Search } from 'lucide-react'
+import { Users, CalendarClock, Briefcase, Search } from 'lucide-react'
 import { Card, Eyebrow } from '../components/ui'
 import { ChatView } from '../components/ChatView'
+import { SignalMark } from '../components/Logo'
 import { useAssistant } from '../components/AssistantProvider'
 import { ragSuggestions } from '../lib/rag'
 
@@ -17,9 +18,9 @@ export default function Assistant() {
       {/* Chat */}
       <Card className="xl:col-span-2 overflow-hidden flex flex-col">
         <div className="bg-signal text-white px-5 py-4 flex items-center gap-3 shrink-0">
-          <span className="grid place-items-center size-10 rounded-xl glass"><Sparkles size={20} /></span>
+          <SignalMark size={38} />
           <div>
-            <p className="font-display font-700 text-[16px] leading-tight">Cablenet HR Assistant</p>
+            <p className="font-display font-700 text-[16px] leading-tight">Signal</p>
             <p className="text-[12.5px] text-white/70">Retrieval over your live HR data</p>
           </div>
         </div>
