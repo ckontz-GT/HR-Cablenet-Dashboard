@@ -104,7 +104,7 @@ export function Topbar({ title, subtitle, onMenu }) {
           <Button variant="primary" size="sm" icon={MessageCircle} className="hidden sm:inline-flex" onClick={() => setOpen(true)}>Ask Signal</Button>
           <IconButton icon={Search} label="Search" className="md:hidden" onClick={() => setOpen(true)} />
           <div className="relative">
-            <IconButton icon={Bell} label="Notifications" />
+            <IconButton icon={Bell} label="Needs attention" onClick={() => navigate('/')} />
             <span className="absolute top-2 right-2.5 size-2 rounded-full bg-flare-500 ring-2 ring-ink-50" />
           </div>
         </div>

@@ -7,6 +7,7 @@ import {
 import { Card, CardHeader, Pill, Avatar, Button, Progress, Eyebrow, STATUS_TONE } from '../components/ui'
 import { Donut } from '../components/charts'
 import { clsx } from '../lib/clsx'
+import { fmtDate, fmtRange } from '../lib/date'
 import { employeeById, departmentById, EMPLOYEES, LEAVE_REQUESTS, certStatus, nextAnniversary, daysUntil } from '../data/mockData'
 
 const LEAVE_ICON = { Annual: Plane, Sick: Stethoscope, Parental: Baby, Unpaid: CircleSlash }
@@ -63,8 +64,8 @@ export default function Profile() {
             </div>
           </div>
           <div className="flex sm:flex-col gap-2 shrink-0">
-            <Button variant="flare" icon={Mail}>Message</Button>
-            <Button variant="secondary" icon={Award} className="!bg-white/10 !text-white !border-white/20 hover:!bg-white/20">Review</Button>
+            <Button variant="flare" icon={Mail} onClick={() => { window.location.href = `mailto:${e.email}` }}>Message</Button>
+            <Button variant="secondary" icon={Phone} className="!bg-white/10 !text-white !border-white/20 hover:!bg-white/20" onClick={() => { window.location.href = `tel:${e.phone}` }}>Call</Button>
           </div>
         </div>
       </div>
@@ -86,7 +87,7 @@ export default function Profile() {
               <ContactRow icon={Mail} label="Email" value={e.email} href={`mailto:${e.email}`} />
               <ContactRow icon={Phone} label="Phone" value={e.phone} href={`tel:${e.phone}`} />
               <ContactRow icon={MapPin} label="Location" value={e.location} />
-              <ContactRow icon={Calendar} label="Start date" value={e.startDate} />
+              <ContactRow icon={Calendar} label="Start date" value={fmtDate(e.startDate)} />
             </div>
           </Card>
 
@@ -136,7 +137,7 @@ export default function Profile() {
                         <span className="grid place-items-center size-8 rounded-lg bg-ink-100 text-ink-500 shrink-0"><Icon size={15} /></span>
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px] font-500 text-ink-900">{l.type} · {l.days}d</p>
-                          <p className="text-[11.5px] text-ink-500">{l.startDate} → {l.endDate}</p>
+                          <p className="text-[11.5px] text-ink-500">{fmtRange(l.startDate, l.endDate)}</p>
                         </div>
                         <Pill tone={LEAVE_TONE[l.type]}>{l.type}</Pill>
                       </div>
@@ -163,13 +164,13 @@ export default function Profile() {
               <DetailRow label="Performance" valueEl={<Pill tone={PERF_TONE[e.performance]}>{e.performance}</Pill>} />
               {e.contractEndDate && (() => {
                 const d = daysUntil(e.contractEndDate)
-                return <DetailRow label="Contract ends" valueEl={<Pill tone={d <= 14 ? 'crit' : d <= 45 ? 'warn' : 'neutral'}>{e.contractEndDate}</Pill>} />
+                return <DetailRow label="Contract ends" valueEl={<Pill tone={d <= 14 ? 'crit' : d <= 45 ? 'warn' : 'neutral'}>{fmtDate(e.contractEndDate)}</Pill>} />
               })()}
               {e.probationEndDate && (() => {
                 const d = daysUntil(e.probationEndDate)
-                return <DetailRow label="Probation ends" valueEl={<Pill tone={d <= 7 ? 'crit' : d <= 45 ? 'warn' : 'neutral'}>{e.probationEndDate}</Pill>} />
+                return <DetailRow label="Probation ends" valueEl={<Pill tone={d <= 7 ? 'crit' : d <= 45 ? 'warn' : 'neutral'}>{fmtDate(e.probationEndDate)}</Pill>} />
               })()}
-              <DetailRow label="Next anniversary" valueEl={<Pill tone={anniv.days <= 30 ? 'flare' : 'neutral'}>{anniv.years}y · {anniv.date}</Pill>} />
+              <DetailRow label="Next anniversary" valueEl={<Pill tone={anniv.days <= 30 ? 'flare' : 'neutral'}>{anniv.years}y · {fmtDate(anniv.date)}</Pill>} />
             </div>
           </Card>
 
@@ -201,7 +202,7 @@ export default function Profile() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-[13px] font-600 text-ink-900 truncate">{c.name}</p>
-                      <p className="text-[11.5px] text-ink-500">Expires {c.expiryDate}</p>
+                      <p className="text-[11.5px] text-ink-500">Expires {fmtDate(c.expiryDate)}</p>
                     </div>
                     <Pill tone={st.tone}>{st.label}</Pill>
                   </div>
